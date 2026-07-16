@@ -1,6 +1,5 @@
-"""BakeKit - bake d'eclairage Cycles en headless (etape 1 : preuve de GI).
-Argument apres '--' : chemin d'un fichier JSON de config, ou JSON inline.
-Reduit au strict necessaire : import GLB, device Cycles, bake 'combined' du Sol, PNG."""
+"""BakeKit - bake d'eclairage Cycles en headless (etape 2 : multi-objets x passes).
+Argument apres '--' : chemin d'un fichier JSON de config, ou JSON inline."""
 import bpy, sys, json, os
 
 argv = sys.argv[sys.argv.index("--") + 1:]
@@ -16,7 +15,7 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 # ---------- Import ----------
 bpy.ops.import_scene.gltf(filepath=cfg["input"])
 
-sol = bpy.context.scene.objects["Sol"]
+meshes = [o for o in bpy.context.scene.objects if o.type == 'MESH']
 
 # ---------- Cycles ----------
 scene = bpy.context.scene
@@ -51,37 +50,69 @@ if scene.world is None:
     bg.inputs['Color'].default_value = (0.02, 0.02, 0.02, 1.0)
     scene.world = world
 
-# ---------- Bake combined du Sol ----------
-res = cfg.get("res", 1024)
-img = bpy.data.images.new("bake_Sol_combined", res, res, alpha=False, float_buffer=False)
-img.colorspace_settings.name = 'sRGB'
+# ---------- Passes ----------
+# combined SANS 'GLOSSY' : le speculaire depend du point de vue, il n'a rien a faire
+# dans une texture figee (reflets "peints" au mauvais endroit une fois dans Three.js).
+PASSES = {
+    "combined": dict(type='COMBINED',
+                     pass_filter={'EMIT', 'DIRECT', 'INDIRECT', 'DIFFUSE', 'COLOR',
+                                  'TRANSMISSION'}),
+    "diffuse":  dict(type='DIFFUSE', pass_filter={'DIRECT', 'INDIRECT'}),  # sans COLOR = sans albedo
+    "ao":       dict(type='AO'),
+}
+# combined -> PNG sRGB ; ao -> PNG donnees ; diffuse -> EXR float :
+# une lightmap contient des valeurs > 1.0 (verifie : jusqu'a 20 dans la Cornell box),
+# un PNG 8 bits les ecraserait toutes a 1.0.
+FORMATS = {
+    "combined": dict(float_buffer=False, colorspace='sRGB',      file_format='PNG',      ext='png'),
+    "diffuse":  dict(float_buffer=True,  colorspace='Non-Color', file_format='OPEN_EXR', ext='exr'),
+    "ao":       dict(float_buffer=False, colorspace='Non-Color', file_format='PNG',      ext='png'),
+}
 
-# Chaque materiau doit avoir un node Image Texture ACTIF pointant sur img :
-# c'est la que Cycles ecrit le resultat. Node non connecte = OK, mais actif = obligatoire.
-for m in sol.data.materials:
-    m.use_nodes = True
-    nodes = m.node_tree.nodes
-    node = nodes.new('ShaderNodeTexImage')
-    node.image = img
-    nodes.active = node
+def bake_objet(obj, passe, res, out_dir, base):
+    fmt = FORMATS[passe]
+    img = bpy.data.images.new(f"bake_{obj.name}_{passe}", res, res,
+                              alpha=False, float_buffer=fmt["float_buffer"])
+    img.colorspace_settings.name = fmt["colorspace"]
 
-bpy.ops.object.select_all(action='DESELECT')
-sol.select_set(True)
-bpy.context.view_layer.objects.active = sol
+    # Chaque materiau de l'objet doit avoir un node Image Texture ACTIF pointant sur img :
+    # c'est la que Cycles ecrit le resultat. Node non connecte = OK, mais actif = obligatoire.
+    if not obj.data.materials:
+        m = bpy.data.materials.new(f"auto_{obj.name}")
+        m.use_nodes = True
+        obj.data.materials.append(m)
+    for m in obj.data.materials:
+        m.use_nodes = True
+        nodes = m.node_tree.nodes
+        node = nodes.new('ShaderNodeTexImage')
+        node.image = img
+        nodes.active = node
 
-bpy.ops.object.bake(type='COMBINED',
-                    pass_filter={'EMIT', 'DIRECT', 'INDIRECT', 'DIFFUSE', 'COLOR', 'TRANSMISSION'},
-                    margin=cfg.get("margin", 8),
-                    margin_type='EXTEND',
-                    uv_layer=sol.data.uv_layers.active.name)
+    # L'objet doit etre selectionne ET actif
+    bpy.ops.object.select_all(action='DESELECT')
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+
+    # margin / margin_type / uv_layer se passent directement a l'operateur (verifie 5.1.2)
+    kwargs = dict(PASSES[passe])
+    kwargs["margin"] = cfg.get("margin", 8)
+    kwargs["margin_type"] = 'EXTEND'
+    kwargs["uv_layer"] = obj.data.uv_layers.active.name
+    bpy.ops.object.bake(**kwargs)
+
+    chemin = os.path.join(out_dir, f"{base}_{obj.name}_{passe}.{fmt['ext']}")
+    img.filepath_raw = chemin
+    img.file_format = fmt["file_format"]
+    img.save()
+    print("BAKEKIT-OUT: " + json.dumps(
+        {"object": obj.name, "pass": passe, "file": chemin, "res": res}), flush=True)
 
 out_dir = cfg["out"]
 os.makedirs(out_dir, exist_ok=True)
 base = os.path.splitext(os.path.basename(cfg["input"]))[0]
-chemin = os.path.join(out_dir, f"{base}_Sol_combined.png")
-img.filepath_raw = chemin
-img.file_format = 'PNG'
-img.save()
-print("BAKEKIT-OUT: " + json.dumps({"object": "Sol", "pass": "combined", "file": chemin, "res": res}),
-      flush=True)
+
+for obj in meshes:
+    for passe in cfg["passes"]:
+        bake_objet(obj, passe, cfg.get("res", 1024), out_dir, base)
+
 print("BAKEKIT: done", flush=True)
