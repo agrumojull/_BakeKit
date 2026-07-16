@@ -211,7 +211,7 @@ Vérifié en bonus : une exception Python non gérée (JSON invalide) ressort bi
 
 ---
 
-## Étape 5 — Wrapper CLI complet  ⬜
+## Étape 5 — Wrapper CLI complet  ✅
 
 **Objectif.** `cli.mjs` complet : localisation de Blender, config par fichier temporaire, relais
 des logs, vérification des sorties.
@@ -226,6 +226,14 @@ des logs, vérification des sorties.
 
 **Gate.** `node cli.mjs test/cornell.glb …` produit exactement le même résultat que le lancement
 manuel de l'étape 1–3.
+
+**Statut.** Revérifié sur cette machine : bake via `cli.mjs --pass combined --res 256 --samples 64`
+comparé pixel à pixel au lancement manuel équivalent (même `bake.py`, même `cfg.json`) — bleeding
+rouge/vert quasi identique (1692–1695 rouge, 1892 vert des deux côtés), écart max **0.016**/256
+et moyen **0.00015** sur le sol, cohérent avec le bruit Monte Carlo normal d'un rendu GPU (Cycles
+n'est pas garanti bit-exact d'un run à l'autre). Correction apportée par rapport au code du guide :
+`outDir` est maintenant résolu en chemin absolu (`path.resolve(opts.out)`) — un `--out` relatif
+faisait écrire Blender hors du dossier attendu par le check d'existence du wrapper.
 
 **Pièges à surveiller.**
 - **Quoting PowerShell** : un JSON inline passé à un exe natif perd ses guillemets → fichier temporaire.
@@ -315,6 +323,6 @@ Non planifiées dans la roadmap, mais notées pour ne pas les réinventer :
 | 2. Multi-objets × passes | Boucle + `diffuse` EXR + `ao` | 21 sorties, EXR > 1.0 | ✅ |
 | 3. Éclairage complet | Cascade + `--lights` + `--auto-light` | Reproduction Three.js + rig auto | ✅ |
 | 4. Robustesse & codes | exits 1/2/3/4, logs `BAKEKIT-OUT` | Chaque erreur → bon code | ✅ |
-| 5. Wrapper CLI | `cli.mjs` complet | Résultat identique au manuel | ⬜ |
+| 5. Wrapper CLI | `cli.mjs` complet | Résultat identique au manuel | ✅ |
 | 6. Harnais de test | `check.py` + `npm test` | `CHECK: OK` en une commande | ⬜ |
 | 7. Boucle Three.js | Texture chargée dans DreamDesk | Rendu correct bout en bout | ⬜ |

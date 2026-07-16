@@ -552,7 +552,7 @@ function trouverBlender() {
   process.exit(1);
 }
 
-const outDir = opts.out ?? path.join(path.dirname(path.resolve(input)), 'out');
+const outDir = opts.out ? path.resolve(opts.out) : path.join(path.dirname(path.resolve(input)), 'out');
 mkdirSync(outDir, { recursive: true });
 
 const cfg = {
@@ -600,6 +600,11 @@ for (const p of produits) {
 }
 console.log(`${produits.length} texture(s) bakée(s) dans ${outDir}`);
 ```
+
+> **Corrigé le 16/07/2026 (étape 5) :** `outDir` doit être résolu en chemin absolu même quand
+> `--out` est fourni explicitement. Sans `path.resolve`, un `--out` relatif faisait écrire Blender
+> dans un chemin dont la résolution pouvait diverger de celle du process Node au moment du check
+> `existsSync` — le wrapper rapportait alors `manquant: ...` bien que le bake ait réussi.
 
 `package.json` :
 
