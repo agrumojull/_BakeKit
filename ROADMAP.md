@@ -173,7 +173,7 @@ bleeding rouge/vert (2450/2980 texels) ; `--auto-light` produit 7/7 sorties non 
 
 ---
 
-## Étape 4 — Robustesse & codes de sortie  ⬜
+## Étape 4 — Robustesse & codes de sortie  ✅
 
 **Objectif.** Garantir que chaque cas d'erreur renvoie un code de sortie fiable — le contrat
 entre `bake.py` et `cli.mjs`.
@@ -202,6 +202,12 @@ entre `bake.py` et `cli.mjs`.
 **Piège central.** Sans `--python-exit-code 1`, une exception Python dans Blender sort avec le
 code **0** : le wrapper croirait au succès. Les `sys.exit(n)` explicites restent prioritaires
 (3 reste 3).
+
+**Statut.** Revérifié sur cette machine, les 4 cas du gate renvoient le bon code : `cornell_nouv.glb`
+→ exit 3 (liste `Sol, MurGauche, MurDroit, MurFond, Plafond, CubeA, CubeB`) ; `--object Inexistant`
+→ exit 2 ; GLB sans lumière ni `--hdri`/`--sun` → exit 4 ; `--sun "45,60,3"` → exit 0 (bake complet).
+Vérifié en bonus : une exception Python non gérée (JSON invalide) ressort bien en exit 1 grâce à
+`--python-exit-code 1`.
 
 ---
 
@@ -308,7 +314,7 @@ Non planifiées dans la roadmap, mais notées pour ne pas les réinventer :
 | 1. Cœur de bake | `bake.py` minimal, 1 passe, 1 objet | Bleeding rouge **et** vert sur le sol | ✅ |
 | 2. Multi-objets × passes | Boucle + `diffuse` EXR + `ao` | 21 sorties, EXR > 1.0 | ✅ |
 | 3. Éclairage complet | Cascade + `--lights` + `--auto-light` | Reproduction Three.js + rig auto | ✅ |
-| 4. Robustesse & codes | exits 1/2/3/4, logs `BAKEKIT-OUT` | Chaque erreur → bon code | ⬜ |
+| 4. Robustesse & codes | exits 1/2/3/4, logs `BAKEKIT-OUT` | Chaque erreur → bon code | ✅ |
 | 5. Wrapper CLI | `cli.mjs` complet | Résultat identique au manuel | ⬜ |
 | 6. Harnais de test | `check.py` + `npm test` | `CHECK: OK` en une commande | ⬜ |
 | 7. Boucle Three.js | Texture chargée dans DreamDesk | Rendu correct bout en bout | ⬜ |

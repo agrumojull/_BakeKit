@@ -1,5 +1,9 @@
-"""BakeKit - bake d'eclairage Cycles en headless (etape 3 : cascade d'eclairage complete).
-Argument apres '--' : chemin d'un fichier JSON de config, ou JSON inline."""
+"""BakeKit - bake d'eclairage Cycles en headless (etape 4 : robustesse & codes de sortie).
+Argument apres '--' : chemin d'un fichier JSON de config, ou JSON inline.
+
+Contrat de codes de sortie :
+  0 succes | 1 exception bpy non capturee (--python-exit-code 1) | 2 --object introuvable
+  3 mesh sans UVs | 4 aucune source de lumiere"""
 import bpy, sys, json, math, os
 from mathutils import Vector
 
@@ -17,6 +21,17 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=cfg["input"])
 
 meshes = [o for o in bpy.context.scene.objects if o.type == 'MESH']
+if cfg.get("object"):
+    meshes = [o for o in meshes if o.name == cfg["object"]]
+    if not meshes:
+        print(f"BAKEKIT-ERROR: objet '{cfg['object']}' introuvable", flush=True)
+        sys.exit(2)
+
+# ---------- Validation UV ----------
+sans_uv = [o.name for o in meshes if not o.data.uv_layers]
+if sans_uv:
+    print(f"BAKEKIT-ERROR: pas d'UVs sur: {', '.join(sans_uv)}", flush=True)
+    sys.exit(3)
 
 # ---------- Cycles ----------
 scene = bpy.context.scene
