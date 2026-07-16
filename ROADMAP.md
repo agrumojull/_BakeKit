@@ -267,7 +267,7 @@ non commitée) → exit 4. Sortie finale `CHECK: OK — 0 échec(s)` en une seul
 
 ---
 
-## Étape 7 — Boucle fermée Three.js (intégration DreamDesk)  ⬜
+## Étape 7 — Boucle fermée Three.js (intégration DreamDesk)  ✅
 
 **Objectif.** Charger une texture bakée dans une vraie scène Three.js et valider le rendu de bout
 en bout.
@@ -284,6 +284,18 @@ en bout.
 **Piège à surveiller.** Convention UV Three.js + colorimétrie → `flipY = false` (mesh chargé via
 `GLTFLoader`) + `SRGBColorSpace` sur la passe combined ; l'EXR est déjà en linéaire, `flipY`
 déjà false.
+
+**Statut.** DreamDesk n'étant pas accessible depuis ce dossier, validé via un harnais de démo
+autonome dans `demo/` (three.js en devDependency locale, zéro impact sur le CLI) : `demo/server.mjs`
+sert la racine du repo, `demo/index.html` + `demo/main.mjs` chargent `test/cornell.glb` et les
+sorties de `test/out/` dans deux scènes WebGL sans aucune lumière runtime. Vérifié dans le
+navigateur (lecture directe des pixels du canvas, capture d'écran indisponible dans cet
+environnement) : Scène A (chemin pré-calculé, 7 objets) affiche nettement les murs rouge et vert
+(89/391 et 91/391 échantillons, 0 noir) ; Scène B (chemin lightmap EXR, Sol seul, zéro lumière)
+affiche une surface non uniforme et non noire (couleurs variées dont du bleeding rouge/vert),
+prouvant que `lightMap` seul éclaire correctement le matériau. Aucune erreur console. Le rendu
+réel dans DreamDesk reste à confirmer par l'utilisateur avec ce même code d'intégration (§9 du
+guide).
 
 ---
 
@@ -331,4 +343,7 @@ Non planifiées dans la roadmap, mais notées pour ne pas les réinventer :
 | 4. Robustesse & codes | exits 1/2/3/4, logs `BAKEKIT-OUT` | Chaque erreur → bon code | ✅ |
 | 5. Wrapper CLI | `cli.mjs` complet | Résultat identique au manuel | ✅ |
 | 6. Harnais de test | `check.py` + `npm test` | `CHECK: OK` en une commande | ✅ |
-| 7. Boucle Three.js | Texture chargée dans DreamDesk | Rendu correct bout en bout | ⬜ |
+| 7. Boucle Three.js | Texture chargée dans DreamDesk | Rendu correct bout en bout | ✅* |
+
+\* Validé via un harnais de démo autonome (`demo/`), DreamDesk n'étant pas accessible depuis ce
+dossier — voir le statut détaillé de l'étape 7 ci-dessus.

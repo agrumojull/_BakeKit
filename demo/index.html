@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>BakeKit — démo d'intégration Three.js</title>
+  <style>
+    body { margin: 0; background: #111; color: #eee; font: 14px system-ui, sans-serif; }
+    header { padding: 12px 16px; }
+    .row { display: flex; flex-wrap: wrap; gap: 16px; padding: 0 16px 16px; }
+    figure { margin: 0; }
+    figcaption { padding: 6px 0; opacity: .8; }
+    canvas { display: block; background: #000; border: 1px solid #333; }
+    #status { padding: 0 16px 16px; white-space: pre-wrap; opacity: .8; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BakeKit — étape 7 : boucle fermée Three.js</h1>
+    <p>Chemin A : passe <code>combined</code> en <code>MeshBasicMaterial</code>, zéro lumière au runtime.
+       Chemin B : passe <code>diffuse</code> (EXR) chargée en <code>MeshStandardMaterial.lightMap</code>.</p>
+  </header>
+  <div class="row">
+    <figure>
+      <canvas id="canvasA" width="480" height="360"></canvas>
+      <figcaption>A — Cornell box 100% pré-calculée (combined)</figcaption>
+    </figure>
+    <figure>
+      <canvas id="canvasB" width="480" height="360"></canvas>
+      <figcaption>B — Sol seul, lightmap HDR (diffuse EXR)</figcaption>
+    </figure>
+  </div>
+  <div id="status">chargement…</div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "/demo/node_modules/three/build/three.module.js",
+      "three/addons/": "/demo/node_modules/three/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module" src="./main.mjs"></script>
+</body>
+</html>

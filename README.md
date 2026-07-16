@@ -12,8 +12,9 @@ en pilotant Cycles/Blender en mode headless. Zéro dépendance npm, zéro interf
 
 ## Statut
 
-Projet en cours de construction incrémentale, voir [ROADMAP.md](ROADMAP.md) pour le détail des
-étapes et leurs critères de passage (gates). Étapes 0 (bootstrap) et 1 (preuve de GI) validées.
+Toutes les étapes de la [ROADMAP.md](ROADMAP.md) sont validées (0 à 7). L'étape 7 (intégration
+Three.js) a été vérifiée via le harnais de démo autonome `demo/` ; l'intégration réelle dans
+DreamDesk reste à confirmer avec ce même code (§9 du guide).
 
 ## Structure
 
@@ -22,13 +23,17 @@ BakeKit/
 ├── package.json          # "bin": { "bakekit": "./cli.mjs" }
 ├── cli.mjs               # wrapper : args, localisation blender, spawn, vérif des sorties
 ├── blender/
-│   ├── bake.py           # script bpy : le bake proprement dit
-│   ├── make_test_scene.py# génère la Cornell box de test
-│   └── check.py          # contrôles qualité des sorties
+│   ├── bake.py            # script bpy : le bake proprement dit
+│   ├── make_test_scene.py # génère la Cornell box de test
+│   ├── check.py           # contrôles qualité des sorties
+│   └── make_nolight_fixture.py # fixture de test (harnais npm test)
 ├── three/
 │   └── dumpLights.mjs    # helper : scène Three.js -> scene-lights.json
-└── test/                 # GLB de test + sorties
+├── demo/                 # démo Three.js autonome (étape 7) : `npm start` dans ce dossier
+└── test/                 # GLB de test + sorties (run.mjs = npm test)
 ```
+
+Pour lancer la démo Three.js : `cd demo && npm install && npm start`, puis ouvrir l'URL affichée.
 
 ## Documentation
 

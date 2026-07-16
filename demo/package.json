@@ -1,0 +1,13 @@
+{
+  "name": "bakekit-demo",
+  "version": "1.0.0",
+  "description": "Démo autonome : charge les textures bakées par BakeKit dans une vraie scène Three.js (étape 7 de la roadmap).",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "three": "^0.185.1"
+  }
+}
