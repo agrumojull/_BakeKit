@@ -4,6 +4,7 @@ __pycache__/
 
 # Sorties de bake générées localement (regénérées par npm test / bake.py)
 test/out/
+test/tmp/
 test/cfg.json
 
 # Divers OS/éditeurs

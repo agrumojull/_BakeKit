@@ -243,7 +243,7 @@ faisait écrire Blender hors du dossier attendu par le check d'existence du wrap
 
 ---
 
-## Étape 6 — Harnais de test automatisé  ⬜
+## Étape 6 — Harnais de test automatisé  ✅
 
 **Objectif.** Une seule commande qui enchaîne : génération de scène → bake → contrôle qualité →
 cas d'erreur.
@@ -258,6 +258,12 @@ cas d'erreur.
 **Astuce du test.** Sol et cubes blancs + lumière blanche → sans GI tout serait neutre (R≈G≈B).
 Toute teinte prouve la lumière rebondie sur les murs colorés — le test est **indépendant du
 layout UV** produit par `smart_project`.
+
+**Statut.** Revérifié sur cette machine : `npm test` (→ `test/run.mjs`) enchaîne génération de
+scène, bake 128²/32 samples (21 sorties), `check.py` (bleeding sol rouge=505/vert=530, CubeA
+rouge=1966), puis les trois cas d'erreur `cornell_nouv.glb` → exit 3, `--object Inexistant` →
+exit 2, `cornell_nolight.glb` (fixture générée à la volée par `blender/make_nolight_fixture.py`,
+non commitée) → exit 4. Sortie finale `CHECK: OK — 0 échec(s)` en une seule commande.
 
 ---
 
@@ -324,5 +330,5 @@ Non planifiées dans la roadmap, mais notées pour ne pas les réinventer :
 | 3. Éclairage complet | Cascade + `--lights` + `--auto-light` | Reproduction Three.js + rig auto | ✅ |
 | 4. Robustesse & codes | exits 1/2/3/4, logs `BAKEKIT-OUT` | Chaque erreur → bon code | ✅ |
 | 5. Wrapper CLI | `cli.mjs` complet | Résultat identique au manuel | ✅ |
-| 6. Harnais de test | `check.py` + `npm test` | `CHECK: OK` en une commande | ⬜ |
+| 6. Harnais de test | `check.py` + `npm test` | `CHECK: OK` en une commande | ✅ |
 | 7. Boucle Three.js | Texture chargée dans DreamDesk | Rendu correct bout en bout | ⬜ |
