@@ -1,0 +1,11 @@
+node_modules/
+__pycache__/
+*.pyc
+
+# Sorties de bake générées localement (regénérées par npm test / bake.py)
+test/out/
+test/cfg.json
+
+# Divers OS/éditeurs
+.DS_Store
+Thumbs.db

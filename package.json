@@ -1,0 +1,11 @@
+{
+  "name": "bakekit",
+  "version": "0.1.0",
+  "description": "CLI qui bake de l'éclairage réaliste (GI, ombres douces, AO) sur les textures d'un modèle 3D en pilotant Cycles/Blender en mode headless.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "bakekit": "./cli.mjs"
+  },
+  "private": true
+}
