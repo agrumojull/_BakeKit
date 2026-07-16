@@ -126,7 +126,7 @@ contient des valeurs > 1.0 (vérifié : jusqu'à ~20, et ~950 sur le plafond pr�
 
 ---
 
-## Étape 3 — Éclairage complet (cascade + modes Three.js)  🟡
+## Étape 3 — Éclairage complet (cascade + modes Three.js)  ✅
 
 **Objectif.** Implémenter toute la cascade d'éclairage, y compris les deux modes de première
 classe : `--lights` (réutiliser une scène Three.js existante) et `--auto-light` (rig procédural
@@ -166,8 +166,10 @@ réglage ; seule la luminosité globale demande une calibration.
 - `--auto-light` éclaire correctement sans aucune saisie manuelle. ✅
 - `--light-scale` module bien l'intensité globale.
 
-**Statut.** Les deux modes sont déjà vérifiés contre Blender 5.1.2 ; reste à assembler proprement
-la cascade et le helper dans le pipeline final.
+**Statut.** Cascade assemblée dans `bake.py` et helper `dumpLights.mjs` créé. Revérifié sur cette
+machine : `--lights` sur `cornell_nolight.glb` (fixture générée sans lumière) reproduit le
+bleeding rouge/vert (2450/2980 texels) ; `--auto-light` produit 7/7 sorties non uniformes
+(moyennes 0.12–0.41), confirmant un éclairage correct sans saisie manuelle.
 
 ---
 
@@ -305,7 +307,7 @@ Non planifiées dans la roadmap, mais notées pour ne pas les réinventer :
 | 0. Bootstrap | Arbo + `make_test_scene.py` → 2 GLB | Les deux GLB se réimportent | ✅ |
 | 1. Cœur de bake | `bake.py` minimal, 1 passe, 1 objet | Bleeding rouge **et** vert sur le sol | ✅ |
 | 2. Multi-objets × passes | Boucle + `diffuse` EXR + `ao` | 21 sorties, EXR > 1.0 | ✅ |
-| 3. Éclairage complet | Cascade + `--lights` + `--auto-light` | Reproduction Three.js + rig auto | 🟡 |
+| 3. Éclairage complet | Cascade + `--lights` + `--auto-light` | Reproduction Three.js + rig auto | ✅ |
 | 4. Robustesse & codes | exits 1/2/3/4, logs `BAKEKIT-OUT` | Chaque erreur → bon code | ⬜ |
 | 5. Wrapper CLI | `cli.mjs` complet | Résultat identique au manuel | ⬜ |
 | 6. Harnais de test | `check.py` + `npm test` | `CHECK: OK` en une commande | ⬜ |
