@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>BakeKit — Guide rapide</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --card: #16213a;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #f97316;
+    --accent2: #38bdf8;
+    --green: #34d399;
+    --red: #f87171;
+    --border: #2a3752;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 2rem 1.2rem;
+    background: linear-gradient(180deg, #0f172a, #111827);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+  h1 {
+    font-size: 2rem;
+    margin: 0 0 .2rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.5px;
+  }
+  .subtitle { color: var(--muted); margin-bottom: 1.8rem; font-size: .95rem; }
+  section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.1rem 1.4rem;
+    margin-bottom: 1rem;
+  }
+  h2 {
+    font-size: 1.05rem;
+    margin: 0 0 .7rem;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  h2 .badge {
+    font-size: .7rem;
+    padding: .15rem .5rem;
+    border-radius: 999px;
+    background: rgba(56,189,248,.15);
+    color: var(--accent2);
+    font-weight: 600;
+  }
+  code, pre {
+    font-family: "Cascadia Code", Consolas, monospace;
+    font-size: .85rem;
+  }
+  pre {
+    background: #0b1120;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .8rem 1rem;
+    overflow-x: auto;
+    margin: .5rem 0;
+  }
+  code.inline {
+    background: #0b1120;
+    padding: .1rem .4rem;
+    border-radius: 5px;
+    color: var(--accent2);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .85rem;
+    margin-top: .3rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .4rem .5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--muted); font-weight: 600; }
+  .ok { color: var(--green); font-weight: 600; }
+  .err { color: var(--red); font-weight: 600; }
+  ul { margin: .3rem 0; padding-left: 1.3rem; }
+  li { margin-bottom: .3rem; }
+  .tip {
+    border-left: 3px solid var(--accent);
+    background: rgba(249,115,22,.08);
+    padding: .6rem .9rem;
+    border-radius: 0 8px 8px 0;
+    font-size: .88rem;
+    margin-top: .6rem;
+  }
+  .tag {
+    display: inline-block;
+    font-size: .72rem;
+    padding: .1rem .45rem;
+    border-radius: 6px;
+    background: rgba(52,211,153,.15);
+    color: var(--green);
+    margin-right: .3rem;
+  }
+  footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 1.5rem; }
+  @media (prefers-color-scheme: light) {
+    body { background: #f8fafc; color: #1e293b; }
+    section { background: #ffffff; border-color: #e2e8f0; }
+    pre { background: #0f172a; color: #e2e8f0; }
+    code.inline { background: #eef2ff; color: #2563eb; }
+    .subtitle, th { color: #64748b; }
+    footer { color: #94a3b8; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>🍰 BakeKit</h1>
+  <p class="subtitle">Bake d'éclairage réaliste (GI, ombres, AO) sur un modèle 3D — sans jamais ouvrir Blender à la main.</p>
+
+  <section>
+    <h2>🚀 Commande de base</h2>
+    <pre>bakekit mesh.glb</pre>
+    <p>Produit une texture <code class="inline">combined</code> (couleur + lumière) prête à charger dans Three.js, dans un dossier <code class="inline">./out</code> à côté du fichier.</p>
+    <div class="tip">Le mesh doit avoir des <strong>UVs</strong> (dépliage 0–1), et une source de lumière (voir ci-dessous).</div>
+  </section>
+
+  <section>
+    <h2>📍 Installer la commande & chemins des .glb</h2>
+    <p>La commande <code class="inline">bakekit</code> n'est pas installée globalement par défaut. À faire <strong>une seule fois</strong> :</p>
+    <pre>cd C:\...\BakeKit
+npm link</pre>
+    <p>Ensuite, <code class="inline">bakekit</code> fonctionne depuis n'importe quel dossier PowerShell — il n'y a <strong>aucun emplacement imposé</strong> pour les <code class="inline">.glb</code>. Ce qui compte, c'est le chemin donné en argument :</p>
+    <pre><span style="color:#94a3b8"># fichier dans le dossier courant</span>
+bakekit chair.glb --auto-light
+
+<span style="color:#94a3b8"># chemin relatif</span>
+bakekit ..\assets\chair.glb --auto-light
+
+<span style="color:#94a3b8"># chemin absolu (guillemets si espaces)</span>
+bakekit "C:\Projets\DreamDesk\assets\chair.glb" --auto-light</pre>
+    <div class="tip">📂 Par défaut, les textures sortent dans un dossier <code class="inline">out</code> créé <strong>à côté du fichier d'entrée</strong> (pas dans le dossier courant). Utilise <code class="inline">--out "chemin"</code> pour choisir une autre destination.</div>
+  </section>
+
+  <section>
+    <h2>💡 Options essentielles <span class="badge">--flag</span></h2>
+    <table>
+      <tr><th>Option</th><th>Rôle</th></tr>
+      <tr><td><code class="inline">--pass</code></td><td>combined | diffuse | ao (répétable, défaut : combined)</td></tr>
+      <tr><td><code class="inline">--res</code></td><td>résolution carrée (défaut 1024)</td></tr>
+      <tr><td><code class="inline">--samples</code></td><td>qualité Cycles (défaut 256)</td></tr>
+      <tr><td><code class="inline">--out</code></td><td>dossier de sortie</td></tr>
+      <tr><td><code class="inline">--object</code></td><td>ne baker qu'un seul objet</td></tr>
+      <tr><td><code class="inline">--blender</code></td><td>chemin vers blender.exe si non détecté</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>☀️ Choisir l'éclairage</h2>
+    <p>Une seule source à la fois — la première trouvée dans cet ordre gagne :</p>
+    <pre>--lights scene.json   <span style="color:#94a3b8"># lumières exportées d'une scène Three.js</span>
+--auto-light          <span style="color:#94a3b8"># rig automatique calculé sur le mesh</span>
+--hdri env.hdr         <span style="color:#94a3b8"># environnement image</span>
+--sun "45,60,3"        <span style="color:#94a3b8"># azimut, élévation, intensité</span></pre>
+    <p>Sinon : les lumières déjà présentes dans le GLB.</p>
+    <div class="tip">💡 Un décalage de luminosité par rapport au rendu Three.js temps réel ? Ajuste <code class="inline">--light-scale</code> (les positions/ombres, elles, sont exactes).</div>
+  </section>
+
+  <section>
+    <h2>📦 Les 3 passes</h2>
+    <table>
+      <tr><th>Passe</th><th>Contenu</th><th>Usage Three.js</th></tr>
+      <tr><td><span class="tag">combined</span></td><td>couleur + lumière finale</td><td><code class="inline">MeshBasicMaterial({map})</code></td></tr>
+      <tr><td><span class="tag">diffuse</span></td><td>lumière seule (EXR, HDR)</td><td><code class="inline">material.lightMap</code></td></tr>
+      <tr><td><span class="tag">ao</span></td><td>occlusion ambiante</td><td><code class="inline">aoMap</code></td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>🧭 Exemples de commandes</h2>
+
+    <p><strong>Bake minimal</strong>, tout par défaut (passe combined, 1024², lumières du GLB) :</p>
+    <pre>bakekit chair.glb</pre>
+
+    <p><strong>Les 3 passes</strong>, en haute résolution, dans un dossier choisi :</p>
+    <pre>bakekit chair.glb --pass combined --pass diffuse --pass ao --res 2048 --out ./textures</pre>
+
+    <p><strong>Rig automatique</strong> quand le mesh n'a pas de lumière (pratique pour un asset isolé) :</p>
+    <pre>bakekit chair.glb --auto-light</pre>
+
+    <p><strong>Éclairage HDRI</strong>, environnement extérieur :</p>
+    <pre>bakekit chair.glb --hdri env/studio.hdr --res 1024 --samples 128</pre>
+
+    <p><strong>Soleil unique</strong> (azimut, élévation, intensité) :</p>
+    <pre>bakekit chair.glb --sun "45,60,3"</pre>
+
+    <p><strong>Depuis une scène Three.js</strong> (fichier généré par <code class="inline">dumpThreeLights</code>), avec calibration d'intensité :</p>
+    <pre>bakekit chair.glb --lights scene-lights.json --light-scale 1.4</pre>
+
+    <p><strong>Un seul objet</strong> de la scène, avec un Blender non détecté automatiquement :</p>
+    <pre>bakekit scene.glb --object Chaise --blender "C:\Blender\blender.exe"</pre>
+
+    <p><strong>Test rapide</strong> à basse résolution pour vérifier le rendu avant un bake final :</p>
+    <pre>bakekit chair.glb --res 128 --samples 32</pre>
+  </section>
+
+  <section>
+    <h2>⚠️ Codes de sortie</h2>
+    <table>
+      <tr><th>Code</th><th>Sens</th></tr>
+      <tr><td class="ok">0</td><td>succès</td></tr>
+      <tr><td class="err">1</td><td>erreur inattendue côté Blender</td></tr>
+      <tr><td class="err">2</td><td><code class="inline">--object</code> introuvable</td></tr>
+      <tr><td class="err">3</td><td>mesh sans UVs</td></tr>
+      <tr><td class="err">4</td><td>aucune source de lumière</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>🧪 Tester rapidement</h2>
+    <pre>node cli.mjs test/cornell.glb --pass combined --res 128 --samples 32</pre>
+    <p>Ou lancer la démo Three.js complète :</p>
+    <pre>cd demo && npm install && npm start</pre>
+  </section>
+
+  <footer>Voir <code class="inline">BakeKit-guide.md</code> pour le détail technique complet.</footer>
+</div>
+</body>
+</html>

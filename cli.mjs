@@ -32,11 +32,29 @@ if (!input || !existsSync(input)) {
   process.exit(1);
 }
 
+// Validation des options : mieux vaut un message clair ici qu'un traceback Python (exit 1)
+const PASSES_CONNUES = ['combined', 'diffuse', 'ao'];
+const passesInconnues = opts.pass.filter(p => !PASSES_CONNUES.includes(p));
+if (passesInconnues.length) {
+  console.error(`passe(s) inconnue(s): ${passesInconnues.join(', ')} — choix: ${PASSES_CONNUES.join(', ')}`);
+  process.exit(1);
+}
+for (const k of ['res', 'samples', 'margin']) {
+  if (Number.isNaN(+opts[k])) { console.error(`--${k} doit être un nombre (reçu: ${opts[k]})`); process.exit(1); }
+}
+const sun = opts.sun?.split(',').map(Number);
+if (sun && (sun.length !== 3 || sun.some(Number.isNaN))) {
+  console.error(`--sun attend "azimut,élévation,intensité" (ex: "45,60,3"), reçu: ${opts.sun}`);
+  process.exit(1);
+}
+
 function trouverBlender() {
   if (opts.blender) return opts.blender;
   if (process.env.BAKEKIT_BLENDER) return process.env.BAKEKIT_BLENDER;
   try {
-    return execSync('where blender', { encoding: 'utf8' }).split(/\r?\n/)[0].trim();
+    // stderr ignoré : quand where échoue (cas normal), son message partirait dans la console
+    return execSync('where blender', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+      .split(/\r?\n/)[0].trim();
   } catch { /* pas dans le PATH — cas normal sous Windows */ }
   const root = 'C:\\Program Files\\Blender Foundation';
   if (existsSync(root)) {
@@ -60,7 +78,7 @@ const cfg = {
   samples: +opts.samples,
   margin: +opts.margin,
   hdri: opts.hdri && path.resolve(opts.hdri),
-  sun: opts.sun?.split(',').map(Number),      // "45,60,3" → [45, 60, 3]
+  sun,                                        // "45,60,3" → [45, 60, 3]
   lights: opts.lights && path.resolve(opts.lights),
   auto_light: opts['auto-light'] ?? false,
   light_scale: opts['light-scale'] ? +opts['light-scale'] : 1.0,
@@ -81,6 +99,11 @@ const r = spawnSync(blender,
   // sur un long bake et ferait perdre des lignes BAKEKIT-OUT.
   { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 rmSync(cfgPath, { force: true });
+
+if (r.error) {   // spawn impossible (ENOENT, EACCES…) : status est null, stderr vide
+  console.error(`impossible de lancer Blender (${blender}): ${r.error.message}`);
+  process.exit(1);
+}
 
 const produits = [];
 for (const line of (r.stdout ?? '').split(/\r?\n/)) {

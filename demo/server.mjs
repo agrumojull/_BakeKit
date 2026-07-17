@@ -23,7 +23,8 @@ http.createServer((req, res) => {
   const urlPath = decodeURIComponent(req.url.split('?')[0]);
   let filePath = path.join(ROOT, urlPath === '/' ? '/demo/index.html' : urlPath);
 
-  if (!filePath.startsWith(ROOT) || !existsSync(filePath) || !statSync(filePath).isFile()) {
+  // ROOT + sep : startsWith(ROOT) seul laisserait passer un dossier frère "BakeKit<suffixe>"
+  if (!filePath.startsWith(ROOT + path.sep) || !existsSync(filePath) || !statSync(filePath).isFile()) {
     res.writeHead(404); res.end('Not found'); return;
   }
   const ext = path.extname(filePath).toLowerCase();

@@ -13,7 +13,9 @@ const TMP = path.join(TEST, 'tmp');
 function trouverBlender() {
   if (process.env.BAKEKIT_BLENDER) return process.env.BAKEKIT_BLENDER;
   try {
-    return execSync('where blender', { encoding: 'utf8' }).split(/\r?\n/)[0].trim();
+    // stderr ignoré : quand where échoue (cas normal), son message partirait dans la console
+    return execSync('where blender', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+      .split(/\r?\n/)[0].trim();
   } catch { /* pas dans le PATH — cas normal sous Windows */ }
   const root = 'C:\\Program Files\\Blender Foundation';
   if (existsSync(root)) {
